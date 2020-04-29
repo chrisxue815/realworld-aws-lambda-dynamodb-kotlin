@@ -26,7 +26,7 @@ package:
 
 functions:
   user-post:
-    handler: com.serverless.route.userPost.Handler
+    handler: com.serverless.route.usersPost.Handler
     events:
       - http:
           path: users
@@ -34,7 +34,7 @@ functions:
           cors: true
 
   users-login-post:
-    handler: com.serverless.route.userLoginPost.Handler
+    handler: com.serverless.route.usersLoginPost.Handler
     events:
       - http:
           path: users/login
