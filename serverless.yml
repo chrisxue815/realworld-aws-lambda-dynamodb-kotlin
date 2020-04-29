@@ -41,6 +41,14 @@ functions:
           method: post
           cors: true
 
+  user-get:
+    handler: com.serverless.route.userGet.Handler
+    events:
+      - http:
+          path: user
+          method: get
+          cors: true
+
 resources:
   Resources:
     UserTable:
