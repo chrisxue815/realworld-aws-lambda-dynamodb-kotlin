@@ -3,6 +3,7 @@ package com.serverless.service
 import com.serverless.model.EmailUser
 import com.serverless.model.InputError
 import com.serverless.model.User
+import com.serverless.model.verifyAuthorization
 import software.amazon.awssdk.services.dynamodb.model.TransactionCanceledException
 
 fun putUser(user: User): InputError? {
@@ -62,4 +63,14 @@ fun getUserByUsername(username: String): User {
 
     return userTable.getItem(key(username))
             ?: throw InputError.build("username", "not found")
+}
+
+data class GetCurrentUserResult(val user: User, val token: String)
+
+fun getCurrentUser(auth: String?): GetCurrentUserResult {
+    val (username, token) = verifyAuthorization(auth)
+
+    val user = getUserByUsername(username)
+
+    return GetCurrentUserResult(user, token)
 }

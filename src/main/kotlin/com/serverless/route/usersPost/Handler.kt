@@ -1,6 +1,7 @@
 package com.serverless.route.usersPost
 
 import com.amazonaws.services.lambda.runtime.Context
+import com.amazonaws.services.lambda.runtime.events.APIGatewayV2ProxyRequestEvent
 import com.amazonaws.services.lambda.runtime.events.APIGatewayV2ProxyResponseEvent
 import com.serverless.model.User
 import com.serverless.model.generateToken
@@ -13,7 +14,7 @@ import com.serverless.util.ResponseBuilder
 import kotlinx.serialization.Serializable
 
 @Serializable
-class Request(
+private class Request(
         val user: User
 ) {
     @Serializable
@@ -25,7 +26,7 @@ class Request(
 }
 
 @Serializable
-class Response(
+private class Response(
         val user: User
 ) {
     @Serializable
@@ -38,8 +39,10 @@ class Response(
     )
 }
 
-class Handler : RealWorldRequestHandler<Request>(Request.serializer()) {
-    override fun handleRequest(request: Request, context: Context): APIGatewayV2ProxyResponseEvent {
+class Handler : RealWorldRequestHandler {
+    override fun handleRequestSafely(input: APIGatewayV2ProxyRequestEvent, context: Context): APIGatewayV2ProxyResponseEvent {
+        val request = JSON.parse(Request.serializer(), input.body)
+
         validatePassword(request.user.password)
 
         val passwordHash = scrypt(request.user.password)
