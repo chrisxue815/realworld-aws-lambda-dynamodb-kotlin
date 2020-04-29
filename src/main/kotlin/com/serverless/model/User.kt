@@ -16,17 +16,19 @@ class User(
         var image: String? = null,
         var bio: String? = null
 ) {
-    fun validate(): InputError? = when {
-        username == "" -> newInputError("username", "can't be blank")
-        email == "" -> newInputError("email", "can't be blank")
-        passwordHash.size != PASSWORD_HASH_LENGTH -> newInputError("password", "invalid")
-        else -> null
+    fun validate() {
+        when {
+            username == "" -> throw InputError.build("username", "can't be blank")
+            email == "" -> throw InputError.build("email", "can't be blank")
+            passwordHash.size != PASSWORD_HASH_LENGTH -> throw InputError.build("password", "invalid")
+        }
     }
 }
 
-fun validatePassword(password: String): InputError? = when {
-    password.length < MIN_PASSWORD_LENGTH -> newInputError("password", MIN_PASSWORD_LENGTH_ERROR)
-    else -> null
+fun validatePassword(password: String) {
+    when {
+        password.length < MIN_PASSWORD_LENGTH -> throw InputError.build("password", MIN_PASSWORD_LENGTH_ERROR)
+    }
 }
 
 @DynamoDbBean

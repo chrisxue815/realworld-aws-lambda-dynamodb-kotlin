@@ -5,10 +5,12 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 class InputErrorResponse(
-        val errors: InputError
+        val errors: Map<String, List<String>>
 )
 
-fun newInputErrorResponse(err: InputError) = ResponseBuilder.build {
+fun newInputErrorResponse(err: InputError) = newInputErrorResponse(err.errors)
+
+fun newInputErrorResponse(errors: Map<String, List<String>>) = ResponseBuilder.build {
     statusCode = 422
-    rawBody = JSON.stringify(InputErrorResponse.serializer(), InputErrorResponse(err))
+    rawBody = JSON.stringify(InputErrorResponse.serializer(), InputErrorResponse(errors))
 }

@@ -1,6 +1,7 @@
 package com.serverless.service
 
 import software.amazon.awssdk.enhanced.dynamodb.Expression
+import software.amazon.awssdk.enhanced.dynamodb.Key
 import software.amazon.awssdk.enhanced.dynamodb.MappedTableResource
 import software.amazon.awssdk.enhanced.dynamodb.model.PutItemEnhancedRequest
 import software.amazon.awssdk.enhanced.dynamodb.model.TransactWriteItemsEnhancedRequest
@@ -20,3 +21,7 @@ fun <T> PutItemEnhancedRequest.Builder<T>.ifAttributeNotExists(attribute: String
 fun attributeNotExists(attribute: String): Expression {
     return Expression.builder().expression("attribute_not_exists($attribute)").build()
 }
+
+fun key(partitionValue: String): Key = Key.builder().partitionValue(partitionValue).build()
+
+fun key(partitionValue: String, sortValue: String): Key = Key.builder().partitionValue(partitionValue).sortValue(sortValue).build()

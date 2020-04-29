@@ -1,5 +1,9 @@
 package com.serverless.model
 
-typealias InputError = Map<String, List<String>>
+class InputError(val errors: Map<String, List<String>>) : Throwable("InputError") {
+    companion object {
+        fun build(field: String, error: String) = InputError(mapOf(field to listOf(error)))
 
-fun newInputError(field: String, error: String) = mapOf(field to listOf(error))
+        fun build(vararg pairs: Pair<String, List<String>>) = InputError(mapOf(*pairs))
+    }
+}

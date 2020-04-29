@@ -6,10 +6,7 @@ import com.serverless.model.User
 import software.amazon.awssdk.services.dynamodb.model.TransactionCanceledException
 
 fun putUser(user: User): InputError? {
-    val err = user.validate()
-    if (err != null) {
-        return err
-    }
+    user.validate()
 
     val emailUser = EmailUser(
             email = user.email,
@@ -29,7 +26,7 @@ fun putUser(user: User): InputError? {
         }
     } catch (e: TransactionCanceledException) {
         if (e.cancellationReasons().any { it.code() == "ConditionalCheckFailed" }) {
-            return mapOf(
+            return InputError.build(
                     "username" to listOf("has already been taken"),
                     "email" to listOf("has already been taken")
             )
@@ -39,4 +36,30 @@ fun putUser(user: User): InputError? {
     }
 
     return null
+}
+
+fun getUserByEmail(email: String): User {
+    if (email.isEmpty()) {
+        throw InputError.build("email", "can't be blank")
+    }
+
+    val username = getUsernameByEmail(email)
+
+    return getUserByUsername(username)
+}
+
+fun getUsernameByEmail(email: String): String {
+    val emailUser = emailUserTable.getItem(key(email))
+            ?: throw InputError.build("email", "not found")
+
+    return emailUser.username
+}
+
+fun getUserByUsername(username: String): User {
+    if (username.isEmpty()) {
+        throw InputError.build("username", "can't be blank")
+    }
+
+    return userTable.getItem(key(username))
+            ?: throw InputError.build("username", "not found")
 }

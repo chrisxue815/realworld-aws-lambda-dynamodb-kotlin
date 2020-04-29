@@ -1,8 +1,6 @@
 package com.serverless.route.userPost
 
 import com.amazonaws.services.lambda.runtime.Context
-import com.amazonaws.services.lambda.runtime.RequestHandler
-import com.amazonaws.services.lambda.runtime.events.APIGatewayV2ProxyRequestEvent
 import com.amazonaws.services.lambda.runtime.events.APIGatewayV2ProxyResponseEvent
 import com.serverless.model.User
 import com.serverless.model.generateToken
@@ -10,8 +8,8 @@ import com.serverless.model.scrypt
 import com.serverless.model.validatePassword
 import com.serverless.service.putUser
 import com.serverless.util.JSON
+import com.serverless.util.RealWorldRequestHandler
 import com.serverless.util.ResponseBuilder
-import com.serverless.util.newInputErrorResponse
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -40,14 +38,9 @@ class Response(
     )
 }
 
-class Handler : RequestHandler<APIGatewayV2ProxyRequestEvent, APIGatewayV2ProxyResponseEvent> {
-    override fun handleRequest(input: APIGatewayV2ProxyRequestEvent, context: Context): APIGatewayV2ProxyResponseEvent {
-        val request = JSON.parse(Request.serializer(), input.body)
-
-        var err = validatePassword(request.user.password)
-        if (err != null) {
-            return newInputErrorResponse(err)
-        }
+class Handler : RealWorldRequestHandler<Request>(Request.serializer()) {
+    override fun handleRequest(request: Request, context: Context): APIGatewayV2ProxyResponseEvent {
+        validatePassword(request.user.password)
 
         val passwordHash = scrypt(request.user.password)
 
@@ -57,10 +50,7 @@ class Handler : RequestHandler<APIGatewayV2ProxyRequestEvent, APIGatewayV2ProxyR
                 passwordHash = passwordHash
         )
 
-        err = putUser(user)
-        if (err != null) {
-            return newInputErrorResponse(err)
-        }
+        putUser(user)
 
         val token = generateToken(user.username)
 
