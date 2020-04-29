@@ -33,6 +33,14 @@ functions:
           method: post
           cors: true
 
+  users-login-post:
+    handler: com.serverless.route.userLoginPost.Handler
+    events:
+      - http:
+          path: users/login
+          method: post
+          cors: true
+
 resources:
   Resources:
     UserTable:
