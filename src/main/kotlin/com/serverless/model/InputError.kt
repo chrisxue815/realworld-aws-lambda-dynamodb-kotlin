@@ -7,5 +7,3 @@ class InputError(val errors: Map<String, List<String>>) : Throwable() {
         fun build(vararg pairs: Pair<String, List<String>>) = InputError(mapOf(*pairs))
     }
 }
-
-class UnauthorizedError(val field: String, val error: String) : Throwable()

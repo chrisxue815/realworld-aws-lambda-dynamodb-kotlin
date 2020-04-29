@@ -29,12 +29,16 @@ fun generateToken(username: String): String {
     return jwt.compact()
 }
 
-data class VerifyAuthorizationResult(val username: String, val token: String)
+data class VerifyAuthorizationResult(val username: String?, val token: String?)
 
 fun verifyAuthorization(auth: String?): VerifyAuthorizationResult {
-    val parts = auth?.split(' ', limit = 2)
-    if (parts == null || parts.size != 2 || parts[0] != "Token") {
-        throw UnauthorizedError("Authorization", "invalid format")
+    if (auth == null) {
+        return VerifyAuthorizationResult(null, null)
+    }
+
+    val parts = auth.split(' ', limit = 2)
+    if (parts.size != 2 || parts[0] != "Token") {
+        return VerifyAuthorizationResult(null, null)
     }
 
     val token = parts[1]
@@ -42,25 +46,25 @@ fun verifyAuthorization(auth: String?): VerifyAuthorizationResult {
     return VerifyAuthorizationResult(username, token)
 }
 
-private fun verifyToken(tokenString: String): String {
+private fun verifyToken(tokenString: String): String? {
     val token = try {
         Jwts.parserBuilder().setSigningKey(JWT_KEY).build().parseClaimsJws(tokenString)
     } catch (e: JwtException) {
-        throw UnauthorizedError("Authorization", "invalid token")
+        return null
     }
 
     if (token.header.getAlgorithm() != JWT_ALG.value) {
-        throw UnauthorizedError("Authorization", "invalid alg")
+        return null
     }
 
     val now = Date()
     if (now.after(token.body.expiration)) {
-        throw UnauthorizedError("Authorization", "token expired")
+        return null
     }
 
     val username = token.body.subject
     if (username.isNullOrEmpty()) {
-        throw UnauthorizedError("Authorization", "sub missing")
+        return null
     }
 
     return username

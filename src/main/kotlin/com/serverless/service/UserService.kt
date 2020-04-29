@@ -65,10 +65,13 @@ fun getUserByUsername(username: String): User {
             ?: throw InputError.build("username", "not found")
 }
 
-data class GetCurrentUserResult(val user: User, val token: String)
+data class GetCurrentUserResult(val user: User?, val token: String?)
 
 fun getCurrentUser(auth: String?): GetCurrentUserResult {
     val (username, token) = verifyAuthorization(auth)
+    if (username == null) {
+        return GetCurrentUserResult(null, token)
+    }
 
     val user = getUserByUsername(username)
 

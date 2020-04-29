@@ -7,6 +7,7 @@ import com.serverless.service.getCurrentUser
 import com.serverless.util.JSON
 import com.serverless.util.RealWorldRequestHandler
 import com.serverless.util.ResponseBuilder
+import com.serverless.util.UnauthorizedError
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -26,6 +27,9 @@ private class Response(
 class Handler : RealWorldRequestHandler {
     override fun handleRequestSafely(input: APIGatewayV2ProxyRequestEvent, context: Context): APIGatewayV2ProxyResponseEvent {
         val (user, token) = getCurrentUser(input.headers["Authorization"])
+        if (user == null || token == null) {
+            throw UnauthorizedError()
+        }
 
         val response = Response(
                 user = Response.User(

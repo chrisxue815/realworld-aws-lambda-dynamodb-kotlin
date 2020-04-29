@@ -15,6 +15,8 @@ fun newInputErrorResponse(errors: Map<String, List<String>>) = ResponseBuilder.b
     rawBody = JSON.stringify(InputErrorResponse.serializer(), InputErrorResponse(errors))
 }
 
+class UnauthorizedError : Throwable()
+
 fun newUnauthorizedResponse() = ResponseBuilder.build {
     statusCode = 401
 }
