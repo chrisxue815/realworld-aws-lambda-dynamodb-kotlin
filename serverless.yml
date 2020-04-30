@@ -49,6 +49,14 @@ functions:
           method: get
           cors: true
 
+  user-put:
+    handler: com.serverless.route.userPut.Handler
+    events:
+      - http:
+          path: user
+          method: put
+          cors: true
+
 resources:
   Resources:
     UserTable:

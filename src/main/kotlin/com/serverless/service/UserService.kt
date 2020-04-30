@@ -4,9 +4,10 @@ import com.serverless.model.EmailUser
 import com.serverless.model.InputError
 import com.serverless.model.User
 import com.serverless.model.verifyAuthorization
+import software.amazon.awssdk.enhanced.dynamodb.model.TransactWriteItemsEnhancedRequest
 import software.amazon.awssdk.services.dynamodb.model.TransactionCanceledException
 
-fun putUser(user: User): InputError? {
+fun putUser(user: User) {
     user.validate()
 
     val emailUser = EmailUser(
@@ -18,25 +19,54 @@ fun putUser(user: User): InputError? {
         ddbClient.transactWriteItems {
             it.put(userTable) {
                 item(user)
-                ifAttributeNotExists("username")
+                conditionExpression(attributeNotExists("username"))
             }
             it.put(emailUserTable) {
                 item(emailUser)
-                ifAttributeNotExists("email")
+                conditionExpression(attributeNotExists("email"))
             }
         }
     } catch (e: TransactionCanceledException) {
-        if (e.cancellationReasons().any { it.code() == "ConditionalCheckFailed" }) {
-            return InputError.build(
+        throwInputError(e) {
+            InputError.build(
                     "username" to listOf("has already been taken"),
                     "email" to listOf("has already been taken")
             )
-        } else {
-            throw e
+        }
+    }
+}
+
+fun updateUser(oldUser: User, newUser: User) {
+    newUser.validate()
+
+    val transaction = TransactWriteItemsEnhancedRequest.builder()
+
+    if (oldUser.email != newUser.email) {
+        val newEmailUser = EmailUser(
+                email = newUser.email,
+                username = newUser.username
+        )
+
+        transaction.put(emailUserTable) {
+            item(newEmailUser)
+            conditionExpression(attributeNotExists("email"))
+        }
+
+        transaction.delete(emailUserTable) {
+            key(oldUser.email)
+            conditionExpression(attributeExists("email"))
         }
     }
 
-    return null
+    transaction.addUpdateItem(userTable, newUser)
+
+    try {
+        ddbClient.transactWriteItems(transaction.build())
+    } catch (e: TransactionCanceledException) {
+        throwInputError(e) {
+            InputError.build("email", "has already been taken")
+        }
+    }
 }
 
 fun getUserByEmail(email: String): User {
