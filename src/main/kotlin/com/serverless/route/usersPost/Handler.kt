@@ -11,6 +11,7 @@ import com.serverless.service.putUser
 import com.serverless.util.JSON
 import com.serverless.util.RealWorldRequestHandler
 import com.serverless.util.ResponseBuilder
+import com.serverless.util.parseRequest
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -41,7 +42,7 @@ private class Response(
 
 class Handler : RealWorldRequestHandler {
     override fun handleRequestSafely(input: APIGatewayV2ProxyRequestEvent, context: Context): APIGatewayV2ProxyResponseEvent {
-        val request = JSON.parse(Request.serializer(), input.body)
+        val request = JSON.parseRequest(Request.serializer(), input.body)
 
         validatePassword(request.user.password)
 
