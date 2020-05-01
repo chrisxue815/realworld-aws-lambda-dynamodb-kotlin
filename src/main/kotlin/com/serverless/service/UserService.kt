@@ -86,8 +86,8 @@ fun getUsernameByEmail(email: String): String {
     return emailUser.username
 }
 
-fun getUserByUsername(username: String): User {
-    if (username.isEmpty()) {
+fun getUserByUsername(username: String?): User {
+    if (username.isNullOrEmpty()) {
         throw InputError.build("username", "can't be blank")
     }
 

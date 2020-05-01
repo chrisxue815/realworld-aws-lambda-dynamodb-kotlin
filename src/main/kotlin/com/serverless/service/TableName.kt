@@ -1,6 +1,6 @@
 package com.serverless.service
 
-val STAGE = System.getenv("STAGE")!!
+val STAGE = System.getenv("STAGE") ?: "dev"
 
 object TableName {
     val USER = makeTableName("user")

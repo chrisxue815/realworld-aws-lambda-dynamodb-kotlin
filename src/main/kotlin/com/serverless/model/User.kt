@@ -2,6 +2,7 @@ package com.serverless.model
 
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbPartitionKey
+import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSortKey
 
 const val MIN_PASSWORD_LENGTH = 1
 const val MIN_PASSWORD_LENGTH_ERROR = "must be at least $MIN_PASSWORD_LENGTH characters in length"
@@ -36,4 +37,12 @@ class EmailUser(
         @get:DynamoDbPartitionKey
         var email: String = "",
         var username: String = ""
+)
+
+@DynamoDbBean
+class Follow(
+        @get:DynamoDbPartitionKey
+        var follower: String = "",
+        @get:DynamoDbSortKey
+        var publisher: String = ""
 )

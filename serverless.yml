@@ -57,6 +57,18 @@ functions:
           method: put
           cors: true
 
+  profiles-get:
+    handler: com.serverless.route.profilesGet.Handler
+    events:
+      - http:
+          path: profiles/{username}
+          method: get
+          cors: true
+          request:
+            parameters:
+              paths:
+                username: true
+
 resources:
   Resources:
     UserTable:
@@ -84,6 +96,25 @@ resources:
         KeySchema:  # POST /users/login
           - AttributeName: email
             KeyType: HASH
+        BillingMode: PROVISIONED
+        ProvisionedThroughput:
+          ReadCapacityUnits: 2
+          WriteCapacityUnits: 2
+
+    FollowTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: realworld-kotlin-${self:provider.stage}-follow
+        AttributeDefinitions:
+          - AttributeName: follower
+            AttributeType: S
+          - AttributeName: publisher
+            AttributeType: S
+        KeySchema:  # GET /articles/feed
+          - AttributeName: follower
+            KeyType: HASH
+          - AttributeName: publisher
+            KeyType: RANGE
         BillingMode: PROVISIONED
         ProvisionedThroughput:
           ReadCapacityUnits: 2
