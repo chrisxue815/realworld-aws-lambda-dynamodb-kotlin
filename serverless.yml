@@ -81,6 +81,18 @@ functions:
               paths:
                 username: true
 
+  profiles-follow-delete:
+    handler: com.serverless.route.profilesFollowDelete.Handler
+    events:
+      - http:
+          path: profiles/{username}/follow
+          method: delete
+          cors: true
+          request:
+            parameters:
+              paths:
+                username: true
+
 resources:
   Resources:
     UserTable:

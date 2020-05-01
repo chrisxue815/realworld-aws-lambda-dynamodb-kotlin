@@ -30,3 +30,7 @@ fun isFollowing(follower: User?, publishers: List<String>): BooleanArray {
 fun follow(follower: String, publisher: String) {
     followTable.putItem(Follow(follower, publisher))
 }
+
+fun unfollow(follower: String, publisher: String) {
+    followTable.deleteItem(key(follower, publisher))
+}
