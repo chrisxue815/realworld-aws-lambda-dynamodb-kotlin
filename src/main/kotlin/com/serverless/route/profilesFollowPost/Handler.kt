@@ -46,7 +46,7 @@ class Handler : RealWorldRequestHandler {
         )
 
         return ResponseBuilder.build {
-            statusCode = 201
+            statusCode = 200
             rawBody = JSON.stringify(Response.serializer(), response)
         }
     }
