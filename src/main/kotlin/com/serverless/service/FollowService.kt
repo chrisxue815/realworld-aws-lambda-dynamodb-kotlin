@@ -6,7 +6,7 @@ import software.amazon.awssdk.enhanced.dynamodb.model.ReadBatch
 
 fun isFollowing(follower: User?, publishers: List<String>): BooleanArray {
     if (follower == null || publishers.isEmpty()) {
-        return BooleanArray(0)
+        return BooleanArray(publishers.size)
     }
 
     val readBatch = ReadBatch.builder(Follow::class.java).mappedTableResource(followTable)
@@ -25,4 +25,8 @@ fun isFollowing(follower: User?, publishers: List<String>): BooleanArray {
             .toSet()
 
     return publishers.map { followingUsers.contains(it) }.toBooleanArray()
+}
+
+fun follow(follower: String, publisher: String) {
+    followTable.putItem(Follow(follower, publisher))
 }

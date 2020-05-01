@@ -69,6 +69,18 @@ functions:
               paths:
                 username: true
 
+  profiles-follow-post:
+    handler: com.serverless.route.profilesFollowPost.Handler
+    events:
+      - http:
+          path: profiles/{username}/follow
+          method: post
+          cors: true
+          request:
+            parameters:
+              paths:
+                username: true
+
 resources:
   Resources:
     UserTable:
