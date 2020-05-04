@@ -58,7 +58,10 @@ fun updateUser(oldUser: User, newUser: User) {
         }
     }
 
-    transaction.addUpdateItem(userTable, newUser)
+    transaction.put(userTable) {
+        item(newUser)
+        conditionExpression(attributeEquals("email", oldUser.email))
+    }
 
     try {
         ddbClient.transactWriteItems(transaction.build())

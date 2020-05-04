@@ -7,6 +7,8 @@ import software.amazon.awssdk.enhanced.dynamodb.MappedTableResource
 import software.amazon.awssdk.enhanced.dynamodb.model.DeleteItemEnhancedRequest
 import software.amazon.awssdk.enhanced.dynamodb.model.PutItemEnhancedRequest
 import software.amazon.awssdk.enhanced.dynamodb.model.TransactWriteItemsEnhancedRequest
+import software.amazon.awssdk.enhanced.dynamodb.model.UpdateItemEnhancedRequest
+import software.amazon.awssdk.services.dynamodb.model.AttributeValue
 import software.amazon.awssdk.services.dynamodb.model.TransactionCanceledException
 
 inline fun <reified T> TransactWriteItemsEnhancedRequest.Builder.put(
@@ -25,13 +27,36 @@ inline fun <reified T> TransactWriteItemsEnhancedRequest.Builder.delete(
     addDeleteItem(mappedTableResource, deleteItem)
 }
 
+inline fun <reified T> TransactWriteItemsEnhancedRequest.Builder.update(
+        mappedTableResource: MappedTableResource<T>,
+        block: UpdateItemEnhancedRequest.Builder<T>.() -> Unit) {
+    val builder = UpdateItemEnhancedRequest.builder(T::class.java)
+    val updateItem = builder.apply(block).build()
+    addUpdateItem(mappedTableResource, updateItem)
+}
+
 fun attributeNotExists(attribute: String): Expression {
-    return Expression.builder().expression("attribute_not_exists($attribute)").build()
+    return Expression.builder()
+            .expression("attribute_not_exists($attribute)")
+            .build()
 }
 
 fun attributeExists(attribute: String): Expression {
-    return Expression.builder().expression("attribute_exists($attribute)").build()
+    return Expression.builder()
+            .expression("attribute_exists($attribute)")
+            .build()
 }
+
+fun attributeEquals(attribute: String, value: AttributeValue): Expression {
+    return Expression.builder()
+            .expression("$attribute = :value")
+            .putExpressionValue(":value", value)
+            .build()
+}
+
+fun attributeEquals(attribute: String, value: String) = attributeEquals(attribute, stringValue(value))
+
+fun stringValue(value: String): AttributeValue = AttributeValue.builder().s(value).build()
 
 fun key(partitionValue: String): Key = Key.builder().partitionValue(partitionValue).build()
 
