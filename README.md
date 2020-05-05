@@ -51,13 +51,13 @@ For example, the following section means `POST /users` is handled by `com.server
 ```
 
 # Design choices
-* Scrypt-based password hasing
+* Scrypt-based password hashing
 * Input validation
 * Data consistency with DynamoDB transactions
 
 These tradeoffs were made for simpler code:
 * Hardcoded Scrypt secret. Downside: tokens can't be invalidated
-* Shared states (like DB and RNG) are singletons, no dependency injections used. Downside: lifecycles of shared states not controllable, potential memory leak, unit-test-unfriendly
+* Shared states (like DB and RNG) are singletons, no dependency injections used. Downside: lifecycles of shared states are not controllable. Potential memory leak. Unit-test-unfriendly
 * Usernames are not changeable
 * Usernames are case-sensitive
 * Performance bottleneck in global secondary indices with a single hash-key value, like ArticleTable.CreatedAt and TagTable.ArticleCount
