@@ -57,8 +57,8 @@ private fun verifyToken(tokenString: String): String? {
         return null
     }
 
-    val now = Date()
-    if (now.after(token.body.expiration)) {
+    val now = Instant.now()
+    if (now.isAfter(token.body.expiration.toInstant())) {
         return null
     }
 

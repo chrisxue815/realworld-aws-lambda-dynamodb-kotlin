@@ -16,7 +16,7 @@ fun putUser(user: User) {
     )
 
     try {
-        ddbClient.transactWriteItems {
+        ddbEnhancedClient.transactWriteItems {
             it.put(userTable) {
                 item(user)
                 conditionExpression(attributeNotExists("username"))
@@ -64,7 +64,7 @@ fun updateUser(oldUser: User, newUser: User) {
     }
 
     try {
-        ddbClient.transactWriteItems(transaction.build())
+        ddbEnhancedClient.transactWriteItems(transaction.build())
     } catch (e: TransactionCanceledException) {
         throwInputError(e) {
             InputError.build("email", "has already been taken")

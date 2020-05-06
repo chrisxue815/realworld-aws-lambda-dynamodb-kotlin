@@ -10,6 +10,7 @@ import software.amazon.awssdk.enhanced.dynamodb.model.TransactWriteItemsEnhanced
 import software.amazon.awssdk.enhanced.dynamodb.model.UpdateItemEnhancedRequest
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue
 import software.amazon.awssdk.services.dynamodb.model.TransactionCanceledException
+import software.amazon.awssdk.services.dynamodb.model.Update
 
 inline fun <reified T> TransactWriteItemsEnhancedRequest.Builder.put(
         mappedTableResource: MappedTableResource<T>,
@@ -58,9 +59,13 @@ fun attributeEquals(attribute: String, value: String) = attributeEquals(attribut
 
 fun stringValue(value: String): AttributeValue = AttributeValue.builder().s(value).build()
 
+fun intValue(value: Int): AttributeValue = AttributeValue.builder().n(value.toString()).build()
+
 fun key(partitionValue: String): Key = Key.builder().partitionValue(partitionValue).build()
 
 fun key(partitionValue: String, sortValue: String): Key = Key.builder().partitionValue(partitionValue).sortValue(sortValue).build()
+
+fun Update.Builder.key(partitionKey: String, partitionValue: String): Update.Builder = key(mapOf(partitionKey to stringValue(partitionValue)))
 
 fun throwInputError(e: TransactionCanceledException, block: () -> InputError) {
     if (e.cancellationReasons().any { it.code() == "ConditionalCheckFailed" }) {

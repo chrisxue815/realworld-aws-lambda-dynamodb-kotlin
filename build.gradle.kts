@@ -71,6 +71,8 @@ dependencies {
     runtimeOnly("io.jsonwebtoken:jjwt-impl:0.11.1")
     runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.11.1")
 
+    implementation("com.github.slugify:slugify:2.4")
+
     testImplementation(kotlin("test"))
     testImplementation(kotlin("test-junit"))
 }

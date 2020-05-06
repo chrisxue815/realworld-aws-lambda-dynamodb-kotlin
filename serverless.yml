@@ -93,6 +93,14 @@ functions:
               paths:
                 username: true
 
+  articles-post:
+    handler: com.serverless.route.articlesPost.Handler
+    events:
+      - http:
+          path: articles
+          method: post
+          cors: true
+
 resources:
   Resources:
     UserTable:
@@ -139,6 +147,111 @@ resources:
             KeyType: HASH
           - AttributeName: publisher
             KeyType: RANGE
+        BillingMode: PROVISIONED
+        ProvisionedThroughput:
+          ReadCapacityUnits: 2
+          WriteCapacityUnits: 2
+
+    ArticleTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: realworld-kotlin-${self:provider.stage}-article
+        AttributeDefinitions:
+          - AttributeName: articleId
+            AttributeType: N
+          - AttributeName: createdAt
+            AttributeType: N
+          - AttributeName: dummy
+            AttributeType: N
+          - AttributeName: author
+            AttributeType: S
+        KeySchema:  # GET /articles/:slug
+          - AttributeName: articleId
+            KeyType: HASH
+        GlobalSecondaryIndexes:
+          - IndexName: createdAt
+            KeySchema:  # GET /articles
+              - AttributeName: dummy
+                KeyType: HASH
+              - AttributeName: createdAt
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+            ProvisionedThroughput:
+              ReadCapacityUnits: 2
+              WriteCapacityUnits: 2
+          - IndexName: author
+            KeySchema:  # GET /articles?author=:author
+              - AttributeName: author
+                KeyType: HASH
+              - AttributeName: createdAt
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+            ProvisionedThroughput:
+              ReadCapacityUnits: 2
+              WriteCapacityUnits: 2
+        BillingMode: PROVISIONED
+        ProvisionedThroughput:
+          ReadCapacityUnits: 2
+          WriteCapacityUnits: 2
+
+    ArticleTagTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: realworld-kotlin-${self:provider.stage}-article-tag
+        AttributeDefinitions:
+          - AttributeName: tag
+            AttributeType: S
+          - AttributeName: articleId
+            AttributeType: N
+          - AttributeName: createdAt
+            AttributeType: N
+        KeySchema:  # POST /articles, PUT /articles
+          - AttributeName: tag
+            KeyType: HASH
+          - AttributeName: articleId
+            KeyType: RANGE
+        LocalSecondaryIndexes:
+          - IndexName: createdAt
+            KeySchema:  # GET /articles?tag=:tag
+              - AttributeName: tag
+                KeyType: HASH
+              - AttributeName: createdAt
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+        BillingMode: PROVISIONED
+        ProvisionedThroughput:
+          ReadCapacityUnits: 2
+          WriteCapacityUnits: 2
+
+    TagTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: realworld-kotlin-${self:provider.stage}-tag
+        AttributeDefinitions:
+          - AttributeName: tag
+            AttributeType: S
+          - AttributeName: articleCount
+            AttributeType: N
+          - AttributeName: dummy
+            AttributeType: N
+        KeySchema:
+          - AttributeName: tag
+            KeyType: HASH
+        GlobalSecondaryIndexes:
+          - IndexName: articleCount
+            KeySchema:  # GET /tags
+              - AttributeName: dummy
+                KeyType: HASH
+              - AttributeName: articleCount
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+            ProvisionedThroughput:
+              ReadCapacityUnits: 2
+              WriteCapacityUnits: 2
         BillingMode: PROVISIONED
         ProvisionedThroughput:
           ReadCapacityUnits: 2

@@ -15,7 +15,7 @@ fun isFollowing(follower: User?, publishers: List<String>): BooleanArray {
         readBatch.addGetItem(key)
     }
 
-    val pages = ddbClient.batchGetItem {
+    val pages = ddbEnhancedClient.batchGetItem {
         it.addReadBatch(readBatch.build())
     }
 
