@@ -9,7 +9,7 @@ fun isFollowing(follower: User?, publishers: List<String>): BooleanArray {
         return BooleanArray(publishers.size)
     }
 
-    val readBatch = ReadBatch.builder(Follow::class.java).mappedTableResource(followTable)
+    val readBatch = ReadBatch.builder(Follow::class.java).mappedTableResource(Table.follow)
     val keys = publishers.distinct().map { key(follower.username, it) }
     for (key in keys) {
         readBatch.addGetItem(key)
@@ -20,7 +20,7 @@ fun isFollowing(follower: User?, publishers: List<String>): BooleanArray {
     }
 
     val followingUsers = pages
-            .flatMap { it.resultsForTable(followTable) }
+            .flatMap { it.resultsForTable(Table.follow) }
             .map { it.publisher }
             .toSet()
 
@@ -28,9 +28,9 @@ fun isFollowing(follower: User?, publishers: List<String>): BooleanArray {
 }
 
 fun follow(follower: String, publisher: String) {
-    followTable.putItem(Follow(follower, publisher))
+    Table.follow.putItem(Follow(follower, publisher))
 }
 
 fun unfollow(follower: String, publisher: String) {
-    followTable.deleteItem(key(follower, publisher))
+    Table.follow.deleteItem(key(follower, publisher))
 }

@@ -2,6 +2,8 @@ package com.serverless.model
 
 import com.github.slugify.Slugify
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.*
+import java.time.Instant
+import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 
 const val MAX_ARTICLE_ID = 0x1000000L // exclusive
@@ -30,6 +32,8 @@ class Article(
         if (tagList.size > MAX_NUM_TAGS_PER_ARTICLE) {
             throw InputError.build("tagList", MAX_NUM_TAGS_PER_ARTICLE_EXCEEDED)
         }
+
+        //TODO: check max length, whitespace, etc
     }
 
     fun makeSlug() {
@@ -40,6 +44,10 @@ class Article(
 
     companion object {
         val dateTimeFormatter = DateTimeFormatter.ofPattern("uuuu-MM-dd'T'HH:mm:ss.SSSX")!!
+
+        fun epochMilliToStr(epochMilli: Long): String {
+            return dateTimeFormatter.format(Instant.ofEpochMilli(epochMilli).atOffset(ZoneOffset.UTC))!!
+        }
 
         fun slugToArticleId(slug: String): Long {
             val articleIdStr = slug.substringAfterLast('-')

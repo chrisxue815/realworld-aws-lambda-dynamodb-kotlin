@@ -17,11 +17,11 @@ fun putUser(user: User) {
 
     try {
         ddbEnhancedClient.transactWriteItems {
-            it.put(userTable) {
+            it.put(Table.user) {
                 item(user)
                 conditionExpression(attributeNotExists("username"))
             }
-            it.put(emailUserTable) {
+            it.put(Table.emailUser) {
                 item(emailUser)
                 conditionExpression(attributeNotExists("email"))
             }
@@ -47,18 +47,18 @@ fun updateUser(oldUser: User, newUser: User) {
                 username = newUser.username
         )
 
-        transaction.put(emailUserTable) {
+        transaction.put(Table.emailUser) {
             item(newEmailUser)
             conditionExpression(attributeNotExists("email"))
         }
 
-        transaction.delete(emailUserTable) {
+        transaction.delete(Table.emailUser) {
             key(oldUser.email)
             conditionExpression(attributeExists("email"))
         }
     }
 
-    transaction.put(userTable) {
+    transaction.put(Table.user) {
         item(newUser)
         conditionExpression(attributeEquals("email", oldUser.email))
     }
@@ -83,7 +83,7 @@ fun getUserByEmail(email: String): User {
 }
 
 fun getUsernameByEmail(email: String): String {
-    val emailUser = emailUserTable.getItem(key(email))
+    val emailUser = Table.emailUser.getItem(key(email))
             ?: throw InputError.build("email", "not found")
 
     return emailUser.username
@@ -94,7 +94,7 @@ fun getUserByUsername(username: String?): User {
         throw InputError.build("username", "can't be blank")
     }
 
-    return userTable.getItem(key(username))
+    return Table.user.getItem(key(username))
             ?: throw InputError.build("username", "not found")
 }
 

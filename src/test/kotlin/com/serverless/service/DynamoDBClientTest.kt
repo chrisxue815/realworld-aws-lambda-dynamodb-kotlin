@@ -7,8 +7,8 @@ import kotlin.test.assertEquals
 
 class DynamoDBClientTest {
     @Test
-    fun `followTable should have partition key named follower`() {
-        val actual = followTable.tableSchema().tableMetadata().indexPartitionKey(TableMetadata.primaryIndexName())
+    fun `Table follow should have partition key named follower`() {
+        val actual = Table.follow.tableSchema().tableMetadata().indexPartitionKey(TableMetadata.primaryIndexName())
         val expected = Follow::follower.name
         assertEquals(expected, actual)
     }

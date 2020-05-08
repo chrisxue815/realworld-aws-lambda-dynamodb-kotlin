@@ -101,6 +101,14 @@ functions:
           method: post
           cors: true
 
+  articles-get:
+    handler: com.serverless.route.articlesGet.Handler
+    events:
+      - http:
+          path: articles
+          method: get
+          cors: true
+
 resources:
   Resources:
     UserTable:

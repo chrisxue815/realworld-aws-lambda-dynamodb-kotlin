@@ -2,13 +2,17 @@ package com.serverless.service
 
 import com.serverless.model.Article
 import com.serverless.model.ArticleTag
+import com.serverless.model.InputError
 import com.serverless.model.MAX_ARTICLE_ID
+import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional.keyEqualTo
+import software.amazon.awssdk.enhanced.dynamodb.model.QueryEnhancedRequest
 import software.amazon.awssdk.enhanced.dynamodb.model.TransactWriteItemsEnhancedRequest
 import software.amazon.awssdk.services.dynamodb.model.ConditionalCheckFailedException
 import software.amazon.awssdk.services.dynamodb.model.TransactWriteItem
 import software.amazon.awssdk.services.dynamodb.model.TransactWriteItemsRequest
 
 const val MAX_ATTEMPT = 5
+const val MAX_QUERY_DEPTH = 1000
 
 fun putArticle(article: Article) {
     article.validate()
@@ -34,9 +38,9 @@ fun putArticleWithRandomId(article: Article) {
     article.makeSlug()
 
     val puts = TransactWriteItemsEnhancedRequest.builder()
-    val updates = mutableListOf<TransactWriteItem>() // Update expression is not yet supported by DynamoDB enhanced client
+    val updates = mutableListOf<TransactWriteItem>() // DynamoDB enhanced client doesn't support update expression
 
-    puts.put(articleTable) {
+    puts.put(Table.article) {
         item(article)
         conditionExpression(attributeNotExists("articleId"))
     }
@@ -49,7 +53,7 @@ fun putArticleWithRandomId(article: Article) {
         )
 
         // Link article with tag
-        puts.put(articleTagTable) {
+        puts.put(Table.articleTag) {
             item(articleTag)
         }
 
@@ -71,4 +75,104 @@ fun putArticleWithRandomId(article: Article) {
             .transactItems(updates)
 
     ddbClient.transactWriteItems(transactItems.build())
+}
+
+fun getArticles(
+        offset: Int,
+        limit: Int,
+        author: String?,
+        tag: String?,
+        favorited: String?
+): List<Article> {
+    if (offset < 0) {
+        throw InputError.build("offset", "must be non-negative")
+    }
+
+    if (limit <= 0) {
+        throw InputError.build("limit", "must be positive")
+    }
+
+    if (offset + limit > MAX_QUERY_DEPTH) {
+        throw InputError.build("offset + limit", "must be smaller or equal to $MAX_QUERY_DEPTH")
+    }
+
+    val numFilters = getNumFilters(author, tag, favorited)
+    if (numFilters > 1) {
+        throw InputError.build("author, tag, favorited", "only one of these can be specified")
+    }
+
+    if (numFilters == 0) {
+        return getAllArticles(offset, limit)
+    }
+
+    if (!author.isNullOrBlank()) {
+        return getArticlesByAuthor(author, offset, limit)
+    }
+
+    if (!tag.isNullOrBlank()) {
+        return getArticlesByTag(tag, offset, limit)
+    }
+
+    if (!favorited.isNullOrBlank()) {
+        return getFavoriteArticlesByUsername(favorited, offset, limit)
+    }
+
+    throw Exception("Unreachable code")
+}
+
+fun getNumFilters(
+        author: String?,
+        tag: String?,
+        favorited: String?
+): Int {
+    var numFilters = 0
+    if (!author.isNullOrBlank()) {
+        numFilters++
+    }
+    if (!tag.isNullOrBlank()) {
+        numFilters++
+    }
+    if (!favorited.isNullOrBlank()) {
+        numFilters++
+    }
+    return numFilters
+}
+
+fun getAllArticles(
+        offset: Int,
+        limit: Int
+): List<Article> {
+    val query = QueryEnhancedRequest.builder().apply {
+        queryConditional(keyEqualTo { it.partitionValue(0) })
+        limit(offset + limit)
+        scanIndexForward(false)
+    }
+
+    val pages = Table.articleByCreatedAt.query(query.build())
+
+    return pages.flatMap { it.items() }.drop(offset).take(limit)
+}
+
+fun getArticlesByAuthor(
+        author: String,
+        offset: Int,
+        limit: Int
+): List<Article> {
+    throw NotImplementedError()
+}
+
+fun getArticlesByTag(
+        tag: String,
+        offset: Int,
+        limit: Int
+): List<Article> {
+    throw NotImplementedError()
+}
+
+fun getFavoriteArticlesByUsername(
+        favorited: String,
+        offset: Int,
+        limit: Int
+): List<Article> {
+    throw NotImplementedError()
 }

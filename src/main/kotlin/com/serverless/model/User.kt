@@ -22,6 +22,7 @@ class User(
             username == "" -> throw InputError.build("username", "can't be blank")
             email == "" -> throw InputError.build("email", "can't be blank")
             passwordHash.size != PASSWORD_HASH_LENGTH -> throw InputError.build("password", "invalid")
+            //TODO: check max length, whitespace, etc
         }
     }
 }
