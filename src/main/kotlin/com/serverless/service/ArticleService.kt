@@ -159,7 +159,15 @@ fun getArticlesByAuthor(
         offset: Int,
         limit: Int
 ): List<Article> {
-    throw NotImplementedError()
+    val query = QueryEnhancedRequest.builder().apply {
+        queryConditional(keyEqualTo { it.partitionValue(author) })
+        limit(offset + limit)
+        scanIndexForward(false)
+    }
+
+    val pages = Table.articleByAuthor.query(query.build())
+
+    return pages.flatMap { it.items() }.drop(offset).take(limit)
 }
 
 fun getArticlesByTag(
