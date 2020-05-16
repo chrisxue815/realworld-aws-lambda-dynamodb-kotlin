@@ -38,7 +38,7 @@ fun putArticleWithRandomId(article: Article) {
     article.makeSlug()
 
     val puts = TransactWriteItemsEnhancedRequest.builder()
-    val updates = mutableListOf<TransactWriteItem>() // DynamoDB enhanced client doesn't support update expression
+    val transactItems = mutableListOf<TransactWriteItem>() // DynamoDB enhanced client doesn't support update expression
 
     puts.put(Table.article) {
         item(article)
@@ -67,14 +67,15 @@ fun putArticleWithRandomId(article: Article) {
                     ":zero" to intValue(0)
             ))
         }
-        updates.add(update.build())
+        transactItems.add(update.build())
     }
 
-    val transactItems = TransactWriteItemsRequest.builder()
-            .transactItems(puts.build().transactWriteItems())
-            .transactItems(updates)
+    transactItems.addAll(puts.build().transactWriteItems())
 
-    ddbClient.transactWriteItems(transactItems.build())
+    val request = TransactWriteItemsRequest.builder()
+            .transactItems(transactItems)
+
+    ddbClient.transactWriteItems(request.build())
 }
 
 fun getArticles(
